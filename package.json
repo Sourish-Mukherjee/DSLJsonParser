@@ -1,13 +1,11 @@
 {
   "name": "dsl-json",
   "version": "1.0.0",
+  "main": "output/index.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc -w",
     "start:js": "node output/index.js"
-  },
-  "dependencies": {
-    "zod": "^3.11.6"
   },
   "devDependencies": {
     "typescript": "^4.4.4"

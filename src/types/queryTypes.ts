@@ -1,7 +1,21 @@
-import { FilterOperator } from "./operatorTypes";
+import {
+  LogicalOperator,
+  JoinOperator,
+} from "./operatorTypes";
+import { Select } from "./selectTypes";
+import { AllowedValueTypes } from "./valueTypes";
 
-export interface FilterQuery {
+export type Condition = {
   field: string;
-  operator: FilterOperator;
-  value: string | number | boolean | object | null;
-}
+  operator: LogicalOperator;
+  value: AllowedValueTypes;
+};
+
+export type JoinCondition = {
+  join: JoinOperator;
+  conditions: Condition[];
+};
+
+export type DSLQuery = {
+  query: { select: Select[]; filter?: Condition | JoinCondition }[];
+};

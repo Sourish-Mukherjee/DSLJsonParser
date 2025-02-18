@@ -1,3 +1,4 @@
-enum ErrorTypes  {
-    DECODE_ERROR = 'DECODE_ERROR',
-}
+export type ValidationError = {
+  field: string;
+  message: string;
+};

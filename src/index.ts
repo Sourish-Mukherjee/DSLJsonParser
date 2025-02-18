@@ -1,14 +1,12 @@
 import { parseDSLQuery } from "./parser/parser";
+import { executeQuery } from "./engine/executeQuery";
 
-const filterQuery = {
-  field: "status",
-  operator: "eq",
-  value: "active",
-  anyKey: "anyValue",
-};
-
-try {
-  console.log("Filter Query:", parseDSLQuery(filterQuery));
-} catch (error) {
-  console.error("Error");
+export function parseAndExectueQuery(dslQueryObject: unknown, data: unknown[]) {
+  try {
+    const parsedQuery = parseDSLQuery(dslQueryObject);
+    const result = executeQuery(data, parsedQuery);
+    return result;
+  } catch (error) {
+    console.error("Error");
+  }
 }
