@@ -4,10 +4,22 @@ exports.getNestedFieldValue = void 0;
 function getNestedFieldValue(obj, field) {
     const fields = field.split(".");
     return fields.reduce((acc, currentField) => {
-        if (acc === undefined || acc === null || typeof acc !== "object") {
-            return undefined; // If path is invalid, return undefined
+        if (acc === undefined || acc === null) {
+            return undefined;
         }
-        return acc[currentField];
+        if (typeof acc === "string" &&
+            (acc.startsWith("{") || acc.startsWith("["))) {
+            try {
+                acc = JSON.parse(acc);
+            }
+            catch {
+                return undefined;
+            }
+        }
+        if (typeof acc === "object" && acc !== null) {
+            return acc[currentField] ?? undefined;
+        }
+        return undefined;
     }, obj);
 }
 exports.getNestedFieldValue = getNestedFieldValue;
