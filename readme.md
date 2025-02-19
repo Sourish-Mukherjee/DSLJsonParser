@@ -76,12 +76,14 @@ The `filter` clause is used to apply conditions to the **entire array of logs** 
 3. **Selection Execution:** After filtering, the `select` clause extracts the requested fields from the **remaining logs**.
 4. **Final Result:** The selected values are returned according to the defined selection modes.
 
-### When to Use `filter`
-- If you want to retrieve specific fields **only from logs that match certain conditions**, use `select` with `filter`.
-- If you want to retrieve fields **from all logs regardless of conditions**, use `select` without `filter`.
+### Condition Schema
+A `condition` is the basic building block of filtering. Each condition consists of:
+- `field`: The field in the log to evaluate.
+- `operator`: The comparison operation to apply.
+- `value`: The value to compare against.
 
-### Filtering Example
-#### Simple Condition
+#### Standalone Condition
+A single condition applies directly to a log field.
 ```json
 {
   "field": "value.details.warranty",
@@ -91,6 +93,7 @@ The `filter` clause is used to apply conditions to the **entire array of logs** 
 ```
 
 #### Compound Condition (Using `join`)
+Multiple conditions can be grouped using the `join` keyword, which determines how the conditions are evaluated together.
 ```json
 {
   "join": "or",
@@ -100,6 +103,9 @@ The `filter` clause is used to apply conditions to the **entire array of logs** 
   ]
 }
 ```
+- If `join` is `"and"`, **all conditions must be met** for a log to be included.
+- If `join` is `"or"`, **at least one condition must be met** for a log to be included.
+- Nested `join` conditions allow complex filtering logic.
 
 ### Supported Operators
 | Operator  | Description |
