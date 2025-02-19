@@ -5,6 +5,7 @@ export enum LogicalOperator {
   LT = "lt",
   GTE = "gte",
   LTE = "lte",
+  ANY = "any",
   ALL = "all",
 }
 

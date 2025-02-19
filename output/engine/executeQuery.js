@@ -34,9 +34,11 @@ function evaluateFilterCondition(item, filter) {
         case operatorTypes_1.LogicalOperator.ALL:
             return (Array.isArray(fieldValue) &&
                 Array.isArray(value) &&
-                fieldValue.every((v) => value.includes(v)));
-        default:
-            return false;
+                value.every((v) => fieldValue.includes(v)));
+        case operatorTypes_1.LogicalOperator.ANY:
+            return (Array.isArray(fieldValue) &&
+                Array.isArray(value) &&
+                fieldValue.some((v) => value.includes(v)));
     }
 }
 /**

@@ -46,10 +46,14 @@ function evaluateFilterCondition(
       return (
         Array.isArray(fieldValue) &&
         Array.isArray(value) &&
-        fieldValue.every((v) => value.includes(v))
+        value.every((v) => fieldValue.includes(v))
       );
-    default:
-      return false;
+    case LogicalOperator.ANY:
+      return (
+        Array.isArray(fieldValue) &&
+        Array.isArray(value) &&
+        fieldValue.some((v) => value.includes(v))
+      );
   }
 }
 

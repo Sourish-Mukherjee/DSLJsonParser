@@ -13,6 +13,7 @@ export const mapperLogicalOperatorToValueTypes: Record<
   [LogicalOperator.LT]: ["number"],
   [LogicalOperator.GTE]: ["number"],
   [LogicalOperator.LTE]: ["number"],
+  [LogicalOperator.ANY]: ["array"],
   [LogicalOperator.ALL]: ["array"],
 };
 

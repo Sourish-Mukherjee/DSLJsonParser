@@ -9,6 +9,7 @@ exports.mapperLogicalOperatorToValueTypes = {
     [operatorTypes_1.LogicalOperator.LT]: ["number"],
     [operatorTypes_1.LogicalOperator.GTE]: ["number"],
     [operatorTypes_1.LogicalOperator.LTE]: ["number"],
+    [operatorTypes_1.LogicalOperator.ANY]: ["array"],
     [operatorTypes_1.LogicalOperator.ALL]: ["array"],
 };
 function isValidValueType(value, allowedTypes) {

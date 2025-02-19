@@ -9,6 +9,7 @@ var LogicalOperator;
     LogicalOperator["LT"] = "lt";
     LogicalOperator["GTE"] = "gte";
     LogicalOperator["LTE"] = "lte";
+    LogicalOperator["ANY"] = "any";
     LogicalOperator["ALL"] = "all";
 })(LogicalOperator = exports.LogicalOperator || (exports.LogicalOperator = {}));
 var JoinOperator;
