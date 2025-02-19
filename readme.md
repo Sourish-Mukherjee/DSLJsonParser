@@ -38,13 +38,12 @@ A DSL Query consists of an array of query objects, each containing:
 ## Select Clause
 The `select` clause defines which fields to retrieve from the filtered logs. **A query must contain a `select` clause.**
 
-### Why `select` Must Be an Array
-- `select` must be an array because multiple fields may need to be retrieved simultaneously.
-- Each selection can have different paths, aliases, and modes, making it necessary to define multiple selections in a structured way.
-- Having a single `select` object would limit flexibility and force redundant queries.
-
 ### Properties:
 - `paths`: Array of field (keys in logs) paths to extract from the logs.
+
+  **Note:** If mode passed is `filter_result`, this should be set to an empty array.
+  
+  **For mode details, refer to the** [Mode Section](#supported-selection-modes).
 - `alias`: Custom name for the selected field.
 - `mode`: Defines how multiple values are handled from the array of logs.
 
@@ -52,29 +51,19 @@ The `select` clause defines which fields to retrieve from the filtered logs. **A
 - The **first available value** from `paths` is taken as the source of truth.
 - If the first path is `undefined`, the next path in the list is considered, and so on.
 - This ensures fallback logic in case a field is missing in some logs but available in others.
-- Nested field access: Paths like `a.b.c` will traverse inside logs, accessing b within a and then c within b.
+- Nested field access: Paths like `a.b.c` will traverse inside logs, accessing `b` within `a` and then `c` within `b`.
 
 ### Supported Selection Modes
-| Mode      | Description |
-|-----------|------------|
-| `first`   | Returns the first matching value encountered in the logs. |
-| `last`    | Returns the last matching value encountered. |
-| `all`     | Returns an array of all matching values across the logs. |
-| `unique`  | Returns unique values from the result set. |
+| Mode           | Description |
+|---------------|------------|
+| `first`       | Returns the first matching value encountered in the logs. |
+| `last`        | Returns the last matching value encountered. |
+| `all`         | Returns an array of all matching values across the logs. |
+| `unique`      | Returns unique values from the result set. |
+| `filter_result`  | Returns true or false, indicating whether the filter conditions were met for a given log. Use this when you only need to check if any log matches the specified filter criteria, without selecting specific fields from the logs. |
 
 ## Filter Clause (Optional)
 The `filter` clause is used to apply conditions to the **entire array of logs** before selection. **A query cannot have only a `filter` clause without a `select` clause.**
-
-### Why `filter` is Optional
-- Some queries may simply need to retrieve data without filtering.
-- When `filter` is omitted, all logs are considered before applying selection.
-- Filtering is useful when only a subset of the logs should be processed.
-
-### How Filtering Works
-1. **Log Evaluation:** If a `filter` clause is present, the query first applies conditions to narrow down the logs.
-2. **Condition Matching:** Each log is checked against the filter conditions. Logs that do not match are excluded.
-3. **Selection Execution:** After filtering, the `select` clause extracts the requested fields from the **remaining logs**.
-4. **Final Result:** The selected values are returned according to the defined selection modes.
 
 ### Condition Schema
 A `condition` is the basic building block of filtering. Each condition consists of:
@@ -150,8 +139,7 @@ Multiple conditions can be grouped using the `join` keyword, which determines ho
 ## Usage
 To execute a query:
 ```ts
-const result = executeQuery(logs, dslQuery);
+const result = parseAndExectueQuery(dslQuery, logs);
 console.log(result);
 ```
 
----

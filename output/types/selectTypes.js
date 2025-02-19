@@ -7,6 +7,7 @@ var SelectMode;
     SelectMode["LAST"] = "last";
     SelectMode["UNIQUE"] = "unique";
     SelectMode["ALL"] = "all";
+    SelectMode["FILTER_RESULT"] = "filter_result";
 })(SelectMode = exports.SelectMode || (exports.SelectMode = {}));
 function getSelectSchema() {
     return {

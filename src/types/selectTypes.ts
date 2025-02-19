@@ -2,7 +2,8 @@ export enum SelectMode {
   FIRST = "first",
   LAST = "last",
   UNIQUE = "unique",
-  ALL = "all"
+  ALL = "all",
+  FILTER_RESULT = "filter_result"
 }
 
 

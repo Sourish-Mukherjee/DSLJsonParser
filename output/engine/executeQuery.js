@@ -74,6 +74,8 @@ function applySelect(items, select) {
                         return values;
                     case selectTypes_1.SelectMode.UNIQUE:
                         return [...new Set(values)];
+                    case selectTypes_1.SelectMode.FILTER_RESULT:
+                        return items.length > 0;
                     default:
                         return values[0]; // Fallback to FIRST
                 }
