@@ -67,16 +67,16 @@ exports.filterQuery = {
         {
             select: [
                 {
-                    paths: ["title", "value.details.manufacturer"],
+                    paths: [],
                     alias: "column",
-                    mode: "first",
-                },
-                {
-                    paths: ["id"],
-                    alias: "Identifier",
-                    mode: "all",
+                    mode: "filter_result",
                 },
             ],
+            filter: {
+                field: "value.productId",
+                operator: "eq",
+                value: 123334,
+            },
         },
     ],
 };

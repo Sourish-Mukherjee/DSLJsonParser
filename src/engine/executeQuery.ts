@@ -99,6 +99,8 @@ function applySelect(
             return values;
           case SelectMode.UNIQUE:
             return [...new Set(values)];
+          case SelectMode.FILTER_RESULT:
+            return items.length > 0;
           default:
             return values[0]; // Fallback to FIRST
         }
