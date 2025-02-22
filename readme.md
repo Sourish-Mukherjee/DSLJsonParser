@@ -45,7 +45,7 @@ The `select` clause defines which fields to retrieve from the filtered logs. **A
   
   **For mode details, refer to the** [Mode Section](#supported-selection-modes).
 - `alias`: Custom name for the selected field.
-- `mode`: Defines how multiple values are handled from the array of logs.
+- `mode`: Defines how multiple values are handled from the array of logs. **Note:** Its performed after getting all values from array of logs. This operation is not performed on a single log.
 
 ### Path Selection Logic
 - The **first available value** from `paths` is taken as the source of truth.
@@ -61,6 +61,9 @@ The `select` clause defines which fields to retrieve from the filtered logs. **A
 | `all`         | Returns an array of all matching values across the logs. |
 | `unique`      | Returns unique values from the result set. |
 | `filter_result`  | Returns true or false, indicating whether the filter conditions were met for a given log. Use this when you only need to check if any log matches the specified filter criteria, without selecting specific fields from the logs. |
+| `count`  | Return the length of `array` for the given selected field. **Note:** This only works with array. |
+| `count_unique`  | Return the length of `array` after removing duplicates for the given selected field. **Note:** This only works with array. |
+
 
 ## Filter Clause (Optional)
 The `filter` clause is used to apply conditions to the **entire array of logs** before selection. **A query cannot have only a `filter` clause without a `select` clause.**
