@@ -88,7 +88,6 @@ function applySelect(
           .map((path) => getNestedFieldValue(item, path))
           .filter((val) => val !== undefined)
       );
-
       const finalValue = (() => {
         switch (mode) {
           case SelectMode.FIRST:
@@ -101,6 +100,18 @@ function applySelect(
             return [...new Set(values)];
           case SelectMode.FILTER_RESULT:
             return items.length > 0;
+          case SelectMode.COUNT:
+            if (!Array.isArray(values)) return undefined;
+            return values.length;
+          case SelectMode.COUNT_UNIQUE:
+            if (!Array.isArray(values)) return undefined;
+            return new Set(
+              values.map((val) =>
+                typeof val === "object" && val !== null
+                  ? JSON.stringify(val)
+                  : val
+              )
+            ).size;
           default:
             return values[0]; // Fallback to FIRST
         }

@@ -8,6 +8,8 @@ var SelectMode;
     SelectMode["UNIQUE"] = "unique";
     SelectMode["ALL"] = "all";
     SelectMode["FILTER_RESULT"] = "filter_result";
+    SelectMode["COUNT"] = "count";
+    SelectMode["COUNT_UNIQUE"] = "count_unique";
 })(SelectMode = exports.SelectMode || (exports.SelectMode = {}));
 function getSelectSchema() {
     return {

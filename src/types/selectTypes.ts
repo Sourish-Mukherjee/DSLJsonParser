@@ -3,7 +3,9 @@ export enum SelectMode {
   LAST = "last",
   UNIQUE = "unique",
   ALL = "all",
-  FILTER_RESULT = "filter_result"
+  FILTER_RESULT = "filter_result",
+  COUNT = "count",
+  COUNT_UNIQUE = "count_unique",
 }
 
 
