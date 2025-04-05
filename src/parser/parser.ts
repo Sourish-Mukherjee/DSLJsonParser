@@ -130,6 +130,17 @@ function validateSelect(
             message: `'mode' must be of ${getSelectSchema().mode} type`,
           });
         }
+
+        if (
+          item.mode === SelectMode.FILTER_RESULT &&
+          Array.isArray(item.paths) &&
+          item.paths.length > 0
+        ) {
+          errors.push({
+            field: `${path}.select[${index}].paths`,
+            message: `'paths' must be empty when mode is 'filter_result'`,
+          });
+        }
       }
     });
   }
