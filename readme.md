@@ -39,48 +39,62 @@ A DSL Query consists of an array of query objects, each containing:
 The `select` clause defines which fields to retrieve from the filtered logs. **A query must contain a `select` clause.**
 
 ### Properties:
-- `paths`: Array of field (keys in logs) paths to extract from the logs.
 
-  **Note:** If mode passed is `filter_result`, this should be set to an empty array.
-  
-  **For mode details, refer to the** [Mode Section](#supported-selection-modes).
-- `alias`: Custom name for the selected field.
-- `mode`: Defines how multiple values are handled from the array of logs. **Note:** This is performed after retrieving all values from the array of logs. This operation is not performed on a single log.
-- `aggregation`: Specifies an aggregation function to apply to the selected values. **Note:** Aggregation is applied after the `mode` is processed.
+#### **`paths`** (Required)
+- **Description**: An array of field paths (keys in logs) to extract from the dataset.
+- **Behavior**:
+  - The **first available value** from the `paths` array is taken as the source of truth.
+  - If the first path is `undefined`, the next path in the list is considered, and so on. This ensures fallback logic in case a field is missing in some logs but available in others.
+  - Supports **nested field access** using dot notation (e.g., `value.details.manufacturer`), where paths like `a.b.c` will traverse inside logs, accessing `b` within `a` and then `c` within `b`.
+- **Note**: If the `mode` is set to `filter_result`, this should be an empty array (`[]`).
 
-### Path Selection Logic
-- The **first available value** from `paths` is taken as the source of truth.
-- If the first path is `undefined`, the next path in the list is considered, and so on.
-- This ensures fallback logic in case a field is missing in some logs but available in others.
-- Nested field access: Paths like `a.b.c` will traverse inside logs, accessing `b` within `a` and then `c` within `b`.
-
----
-
-## Supported Selection Modes
-| Mode           | Description |
-|----------------|-------------|
-| `first`        | Returns the first matching value encountered in the logs. |
-| `last`         | Returns the last matching value encountered. |
-| `all`          | Returns an array of all matching values across the logs. |
-| `unique`       | Returns unique values from the result set. |
-| `filter_result`| Returns `true` or `false`, indicating whether the filter conditions were met for a given log. Use this when you only need to check if any log matches the specified filter criteria, without selecting specific fields from the logs. |
+**Example**:
+```json
+{
+  "select": [
+    { "paths": ["id", "value.productId"], "alias": "Identifier", "mode": "first" }
+  ]
+}
+```
+**Explanation**:
+- If `id` exists, its value will be selected.
+- If `id` is `undefined`, the value of `value.productId` will be selected.
 
 ---
 
-## Supported Aggregation Functions
-| Aggregation Function | Description |
-|-----------------------|-------------|
-| `count`              | Returns the total number of values. |
-| `count_distinct`      | Returns the total number of unique values. |
-| `sum`                | Returns the sum of all numeric values. |
-| `avg`                | Returns the average of all numeric values. |
-| `min`                | Returns the minimum numeric value. |
-| `max`                | Returns the maximum numeric value. |
+#### **`alias`** (Optional)
+- **Description**: A custom name for the selected field in the output.
+- **Behavior**:
+  - If `alias` is not provided, the first path in the `paths` array will be used as the key in the output.
+  - Useful for renaming fields to make the output more readable or meaningful.
 
-### Notes on Aggregation:
-- Aggregation is applied **after** the `mode` is processed.
-- If `mode` is `unique`, duplicates are removed before aggregation.
-- Aggregation functions like `sum`, `avg`, `min`, and `max` only work with numeric values. Non-numeric values are ignored.
+**Example**:
+```json
+{
+  "select": [
+    { "paths": ["value.price"], "alias": "ProductPrice", "mode": "all" }
+  ]
+}
+```
+**Output**:
+```json
+{ "ProductPrice": [699.99, 1299.99, 199.99, 99.99, 499.99] }
+```
+
+**Explanation**:
+- The field `value.price` is selected and renamed to `ProductPrice` in the output.
+
+---
+
+#### **`mode`** (Optional)
+- **Description**: Defines how multiple values are handled from the dataset.
+- **Details**: For more information, refer to the 📄 [Modes Documentation](docs/selectionModes.md).
+
+---
+
+#### **`aggregation`** (Optional)
+- **Description**: Specifies an aggregation function to apply to the selected values.
+- **Details**: For more information, refer to the 📄 [Aggregations Documentation](docs/aggregations.md).
 
 ---
 
@@ -90,7 +104,7 @@ The `filter` clause is used to apply conditions to the **entire array of logs** 
 ### Condition Schema
 A `condition` is the basic building block of filtering. Each condition consists of:
 - `field`: The field in the log to evaluate.
-- `operator`: The comparison operation to apply.
+- `operator`: The comparison operation to apply. **For a list of supported operators, refer to the 📄 [Operators Documentation](docs/operators.md).**
 - `value`: The value to compare against.
 
 #### Standalone Condition
@@ -120,20 +134,6 @@ Multiple conditions can be grouped using the `join` keyword, which determines ho
 
 ---
 
-### Supported Operators
-| Operator  | Description |
-|-----------|-------------|
-| `eq`      | Equal to |
-| `neq`     | Not equal to |
-| `gt`      | Greater than |
-| `gte`     | Greater than or equal to |
-| `lt`      | Less than |
-| `lte`     | Less than or equal to |
-| `any`     | At least one value exists in an array |
-| `all`     | All values exist in an array |
-
----
-
 ## Execution Flow
 1. **Filter the logs** based on the `filter` clause (if present).
 2. **Apply selection logic** to extract required fields based on `select`.
@@ -154,14 +154,14 @@ Multiple conditions can be grouped using the `join` keyword, which determines ho
 ---
 
 ## Required and Optional Fields
-| Field   | Required | Description |
-|---------|----------|-------------|
-| `select` | ✅ Yes | Defines the fields to retrieve. A query must have at least one `select`. |
+| Field   | Required | Description                                                                 |
+|---------|----------|-----------------------------------------------------------------------------|
+| `select` | ✅ Yes  | Defines the fields to retrieve. A query must have at least one `select`.    |
+| ├─ `paths` | ✅ Yes | Defines the field paths to extract.                                         |
+| ├─ `alias` | ❌ No  | Custom name for the field (optional).                                       |
+| ├─ `mode`  | ❌ No  | Specifies how multiple values should be handled (default: `first`).        |
+| └─ `aggregation` | ❌ No | Specifies an aggregation function to summarize the selected values.    |
 | `filter` | ❌ No  | Defines conditions to filter logs before applying selection. Can be omitted. |
-| `paths` | ✅ Yes (inside `select`) | Defines the field paths to extract. |
-| `alias` | ❌ No | Custom name for the field (optional). |
-| `mode` | ❌ No | Specifies how multiple values should be handled (default: `first`). |
-| `aggregation` | ❌ No | Specifies an aggregation function to summarize the selected values. |
 
 ---
 
