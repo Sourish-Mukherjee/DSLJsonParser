@@ -1,3 +1,6 @@
+[![Tests](https://github.com/Sourish-Mukherjee/DSLJsonParser/actions/workflows/node.js.yml/badge.svg)](https://github.com/johnDoe/DSLJsonParser/actions)
+
+
 # Query Structure Documentation
 
 ## Overview
