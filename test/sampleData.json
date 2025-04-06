@@ -1,0 +1,97 @@
+[
+  {
+    "id": 101,
+    "title": "Smartphone",
+    "isEnabled": true,
+    "createdDate": "2023-01-01T10:00:00Z",
+    "categories": ["electronics", "mobile"],
+    "rating": 4.7,
+    "discount": 10,
+    "value": {
+      "productId": 1001,
+      "price": 699.99,
+      "inStock": true,
+      "details": {
+        "manufacturer": "TechCorp",
+        "warranty": "2 years",
+        "returnPolicy": "30 days"
+      }
+    }
+  },
+  {
+    "id": 102,
+    "title": "Laptop",
+    "isEnabled": false,
+    "createdDate": "2023-02-15T12:00:00Z",
+    "categories": ["electronics", "computers"],
+    "rating": 4.5,
+    "discount": 15,
+    "value": {
+      "productId": 1002,
+      "price": 1299.99,
+      "inStock": false,
+      "details": {
+        "manufacturer": "CompTech",
+        "warranty": "1 year",
+        "returnPolicy": "14 days"
+      }
+    }
+  },
+  {
+    "id": 103,
+    "title": "Smartwatch",
+    "isEnabled": true,
+    "createdDate": "2023-03-10T08:30:00Z",
+    "categories": ["electronics", "wearables"],
+    "rating": 4.2,
+    "discount": null,
+    "value": {
+      "productId": 1003,
+      "price": 199.99,
+      "inStock": true,
+      "details": {
+        "manufacturer": "WearTech",
+        "warranty": "6 months",
+        "returnPolicy": "7 days"
+      }
+    }
+  },
+  {
+    "id": 104,
+    "title": "Headphones",
+    "isEnabled": true,
+    "createdDate": "2023-04-05T09:00:00Z",
+    "categories": ["electronics", "audio"],
+    "rating": 4.8,
+    "discount": 20,
+    "value": {
+      "productId": 1004,
+      "price": 99.99,
+      "inStock": true,
+      "details": {
+        "manufacturer": "AudioTech",
+        "warranty": "1 year",
+        "returnPolicy": "30 days"
+      }
+    }
+  },
+  {
+    "id": 105,
+    "title": "Tablet",
+    "isEnabled": false,
+    "createdDate": "2023-05-20T14:00:00Z",
+    "categories": ["electronics", "mobile"],
+    "rating": 4.3,
+    "discount": 5,
+    "value": {
+      "productId": 1005,
+      "price": 499.99,
+      "inStock": false,
+      "details": {
+        "manufacturer": "TabTech",
+        "warranty": "1 year",
+        "returnPolicy": "15 days"
+      }
+    }
+  }
+]

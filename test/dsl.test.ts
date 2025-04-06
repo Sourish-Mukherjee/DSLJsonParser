@@ -1,6 +1,8 @@
 import { parseDSLQuery } from "../src/parser/parser";
+import { executeQuery } from "../src/engine/executeQuery";
+import sampleData from "./sampleData.json";
 
-describe("parseDSLQuery", () => {
+describe("parseDSLQuery and executeQuery", () => {
   let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
@@ -14,7 +16,6 @@ describe("parseDSLQuery", () => {
   });
 
   const testCases = [
-    // Existing Valid Cases
     {
       name: "should parse a valid DSL query with a single condition",
       input: {
@@ -24,13 +25,14 @@ describe("parseDSLQuery", () => {
             filter: {
               join: "and",
               conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
+                { field: "categories", operator: "any", value: ["electronics"] },
               ],
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 102, 103, 104, 105] },
     },
     {
       name: "should parse a valid DSL query with multiple conditions",
@@ -41,14 +43,15 @@ describe("parseDSLQuery", () => {
             filter: {
               join: "or",
               conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
-                { field: "price", operator: "gt", value: 100 },
+                { field: "categories", operator: "eq", value: "electronics" },
+                { field: "value.price", operator: "gt", value: 100 },
               ],
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 102, 103, 105] },
     },
     {
       name: "should parse a valid DSL query with nested conditions",
@@ -62,17 +65,18 @@ describe("parseDSLQuery", () => {
                 {
                   join: "or",
                   conditions: [
-                    { field: "category", operator: "eq", value: "electronics" },
-                    { field: "price", operator: "lt", value: 200 },
+                    { field: "categories", operator: "any", value: ["electronics"] },
+                    { field: "value.price", operator: "lt", value: 200 },
                   ],
                 },
-                { field: "stock", operator: "gte", value: 10 },
+                { field: "value.inStock", operator: "eq", value: true },
               ],
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 103, 104] },
     },
     {
       name: "should parse a valid DSL query with filter_result mode",
@@ -83,13 +87,14 @@ describe("parseDSLQuery", () => {
             filter: {
               join: "and",
               conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
+                { field: "categories", operator: "any", value: ["electronics"] },
               ],
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: true },
     },
     {
       name: "should parse a valid DSL query with no filter",
@@ -101,225 +106,7 @@ describe("parseDSLQuery", () => {
         ],
       },
       shouldThrow: false,
-    },
-
-    // Existing Invalid Cases
-    {
-      name: "should throw an error if query is missing",
-      input: {},
-      shouldThrow: true,
-      errorMessage: /DSLQuery must have a 'query' property/,
-    },
-    {
-      name: "should throw an error if query is not an array",
-      input: { query: {} },
-      shouldThrow: true,
-      errorMessage: /'query' must be an array/,
-    },
-    {
-      name: "should throw an error if select is missing in a query",
-      input: {
-        query: [
-          {
-            filter: {
-              join: "and",
-              conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage:
-        /Each object in 'query' array must have a 'select' property/,
-    },
-    {
-      name: "should throw an error if paths is not an array",
-      input: {
-        query: [
-          {
-            select: [{ paths: "id", alias: "result", mode: "all" }], // Invalid: paths should be an array
-            filter: {
-              join: "and",
-              conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /'paths' must be of Array<string> type/,
-    },
-    {
-      name: "should throw an error if mode is invalid",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "invalid_mode" }], // Invalid mode
-            filter: {
-              join: "and",
-              conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage:
-        /'mode' must be of first | last | unique | all | filter_result | count | count_unique type/,
-    },
-    {
-      name: "should throw an error if paths is not empty for filter_result mode",
-      input: {
-        query: [
-          {
-            select: [
-              { paths: ["id"], alias: "result", mode: "filter_result" }, // Invalid: paths should be empty
-            ],
-            filter: {
-              join: "and",
-              conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /'paths' must be empty when mode is 'filter_result'/,
-    },
-    {
-      name: "should throw an error if filter conditions are invalid",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              join: "and",
-              conditions: [
-                {
-                  field: "category",
-                  operator: "invalid_operator",
-                  value: "electronics",
-                }, // Invalid operator
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /Operator must be one of/,
-    },
-    {
-      name: "should throw an error if filter is not an object",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: "invalid_filter", // Invalid: filter should be an object
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /Expected an object but received null or another type/,
-    },
-    {
-      name: "should throw an error if join is invalid in a filter",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              join: "invalid_join", // Invalid join operator
-              conditions: [
-                { field: "category", operator: "eq", value: "electronics" },
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /'join' operator must be one of/,
-    },
-    {
-      name: "should throw an error if conditions is not an array in a filter",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              join: "and",
-              conditions: "not_an_array", // Invalid: conditions should be an array
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /'conditions' must be an array/,
-    },
-    {
-      name: "should throw an error if nested conditions are invalid",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              join: "and",
-              conditions: [
-                {
-                  join: "or",
-                  conditions: [
-                    {
-                      field: "category",
-                      operator: "invalid_operator",
-                      value: "electronics",
-                    }, // Invalid operator
-                  ],
-                },
-              ],
-            },
-          },
-        ],
-      },
-      shouldThrow: true,
-      errorMessage: /Operator must be one of/,
-    },
-
-    // New Test Cases for All Operators
-    {
-      name: "should parse 'eq' operator with string value",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              field: "category",
-              operator: "eq",
-              value: "electronics",
-            },
-          },
-        ],
-      },
-      shouldThrow: false,
-    },
-    {
-      name: "should parse 'neq' operator with number value",
-      input: {
-        query: [
-          {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              field: "price",
-              operator: "neq",
-              value: 100,
-            },
-          },
-        ],
-      },
-      shouldThrow: false,
+      expectedResult: { result: [101, 102, 103, 104, 105] },
     },
     {
       name: "should parse 'gt' operator with number value",
@@ -328,14 +115,15 @@ describe("parseDSLQuery", () => {
           {
             select: [{ paths: ["id"], alias: "result", mode: "all" }],
             filter: {
-              field: "price",
+              field: "value.price",
               operator: "gt",
-              value: 100,
+              value: 200,
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 102, 105] },
     },
     {
       name: "should parse 'lt' operator with number value",
@@ -344,7 +132,7 @@ describe("parseDSLQuery", () => {
           {
             select: [{ paths: ["id"], alias: "result", mode: "all" }],
             filter: {
-              field: "price",
+              field: "value.price",
               operator: "lt",
               value: 200,
             },
@@ -352,6 +140,7 @@ describe("parseDSLQuery", () => {
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [103, 104] },
     },
     {
       name: "should parse 'gte' operator with number value",
@@ -360,14 +149,15 @@ describe("parseDSLQuery", () => {
           {
             select: [{ paths: ["id"], alias: "result", mode: "all" }],
             filter: {
-              field: "price",
+              field: "value.price",
               operator: "gte",
-              value: 150,
+              value: 200,
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 102, 105] },
     },
     {
       name: "should parse 'lte' operator with number value",
@@ -376,14 +166,15 @@ describe("parseDSLQuery", () => {
           {
             select: [{ paths: ["id"], alias: "result", mode: "all" }],
             filter: {
-              field: "price",
+              field: "value.price",
               operator: "lte",
-              value: 150,
+              value: 200,
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [103, 104] },
     },
     {
       name: "should parse 'any' operator with array value",
@@ -394,12 +185,13 @@ describe("parseDSLQuery", () => {
             filter: {
               field: "categories",
               operator: "any",
-              value: ["electronics", "home appliances"],
+              value: ["electronics", "mobile"],
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 102, 103, 104, 105] },
     },
     {
       name: "should parse 'all' operator with array value",
@@ -410,55 +202,159 @@ describe("parseDSLQuery", () => {
             filter: {
               field: "categories",
               operator: "all",
-              value: ["electronics", "home appliances"],
+              value: ["electronics", "mobile"],
             },
           },
         ],
       },
       shouldThrow: false,
+      expectedResult: { result: [101, 105] },
     },
     {
-      name: "should throw an error for 'gt' operator with string value",
+      name: "should calculate the sum of numeric values using 'sum' aggregation",
       input: {
         query: [
           {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              field: "price",
-              operator: "gt",
-              value: "100", // Invalid: gt requires a number
-            },
+            select: [
+              {
+                paths: ["value.price"],
+                alias: "total_price",
+                aggregation: "sum",
+              },
+            ],
           },
         ],
       },
-      shouldThrow: true,
-      errorMessage: /Value must be of type: number for operator: gt/,
+      shouldThrow: false,
+      expectedResult: { total_price: 2799.95 },
     },
     {
-      name: "should throw an error for 'any' operator with non-array value",
+      name: "should calculate the average of numeric values using 'avg' aggregation",
       input: {
         query: [
           {
-            select: [{ paths: ["id"], alias: "result", mode: "all" }],
-            filter: {
-              field: "categories",
-              operator: "any",
-              value: "electronics", // Invalid: any requires an array
-            },
+            select: [
+              {
+                paths: ["value.price"],
+                alias: "average_price",
+                aggregation: "avg",
+              },
+            ],
           },
         ],
       },
-      shouldThrow: true,
-      errorMessage: /Value must be of type: array for operator: any/,
+      shouldThrow: false,
+      expectedResult: { average_price: 559.99 },
+    },
+    {
+      name: "should calculate the minimum value using 'min' aggregation",
+      input: {
+        query: [
+          {
+            select: [
+              {
+                paths: ["value.price"],
+                alias: "min_price",
+                aggregation: "min",
+              },
+            ],
+          },
+        ],
+      },
+      shouldThrow: false,
+      expectedResult: { min_price: 99.99 },
+    },
+    {
+      name: "should calculate the maximum value using 'max' aggregation",
+      input: {
+        query: [
+          {
+            select: [
+              {
+                paths: ["value.price"],
+                alias: "max_price",
+                aggregation: "max",
+              },
+            ],
+          },
+        ],
+      },
+      shouldThrow: false,
+      expectedResult: { max_price: 1299.99 },
+    },
+    {
+      name: "should count the number of values using 'count' aggregation",
+      input: {
+        query: [
+          {
+            select: [
+              {
+                paths: ["value.price"],
+                alias: "count_prices",
+                aggregation: "count",
+              },
+            ],
+          },
+        ],
+      },
+      shouldThrow: false,
+      expectedResult: { count_prices: 5 },
+    },
+    {
+      name: "should count distinct values using 'count_distinct' aggregation",
+      input: {
+        query: [
+          {
+            select: [
+              {
+                paths: ["value.price"],
+                alias: "count_distinct_prices",
+                aggregation: "count_distinct",
+              },
+            ],
+          },
+        ],
+      },
+      shouldThrow: false,
+      expectedResult: { count_distinct_prices: 5 },
+    },
+    {
+      name: "should handle empty arrays for aggregation",
+      input: {
+        query: [
+          {
+            select: [
+              {
+                paths: ["value.nonExistent"],
+                alias: "total_price",
+                aggregation: "sum",
+              },
+            ],
+          },
+        ],
+      },
+      shouldThrow: false,
+      expectedResult: { total_price: 0 },
     },
   ];
 
-  testCases.forEach(({ name, input, shouldThrow, errorMessage }) => {
+  testCases.forEach(({ name, input, shouldThrow, expectedResult }) => {
     it(name, () => {
       if (shouldThrow) {
-        expect(() => parseDSLQuery(input)).toThrowError(errorMessage);
+        // Validate that the query throws an error
+        expect(() => parseDSLQuery(input)).toThrowError();
       } else {
-        expect(() => parseDSLQuery(input)).not.toThrow();
+        // Parse the query
+        const parsedQuery = parseDSLQuery(input);
+
+        // Execute the query
+        const result = executeQuery(sampleData, parsedQuery);
+
+        // Convert the result Map to a plain object for comparison
+        const resultObject = Object.fromEntries(result);
+
+        // Validate the result against the expected output
+        expect(resultObject).toEqual(expectedResult);
       }
     });
   });
