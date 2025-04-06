@@ -1,7 +1,7 @@
 import { ValidationError } from "../types/errorTypes";
 import { LogicalOperator, JoinOperator } from "../types/operatorTypes";
 import { DSLQuery } from "../types/queryTypes";
-import { getSelectSchema, SelectMode } from "../types/selectTypes";
+import { getSelectSchema, SelectAggregateFunction, SelectMode } from "../types/selectTypes";
 import {
   mapperLogicalOperatorToValueTypes,
   isValidValueType,
@@ -139,6 +139,18 @@ function validateSelect(
           errors.push({
             field: `${path}.select[${index}].paths`,
             message: `'paths' must be empty when mode is 'filter_result'`,
+          });
+        }
+      }
+
+      if (item.aggregation !== undefined) {
+        const validAggregations = Object.values(SelectAggregateFunction);
+        if (!validAggregations.includes(item.aggregation as SelectAggregateFunction)) {
+          errors.push({
+            field: `${path}.select[${index}].aggregation`,
+            message: `'aggregation' must be of ${
+              getSelectSchema().aggregation
+            } type`,
           });
         }
       }

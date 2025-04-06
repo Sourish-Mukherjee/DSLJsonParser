@@ -107,6 +107,15 @@ function validateSelect(obj, path) {
                     });
                 }
             }
+            if (item.aggregation !== undefined) {
+                const validAggregations = Object.values(selectTypes_1.SelectAggregateFunction);
+                if (!validAggregations.includes(item.aggregation)) {
+                    errors.push({
+                        field: `${path}.select[${index}].aggregation`,
+                        message: `'aggregation' must be of ${(0, selectTypes_1.getSelectSchema)().aggregation} type`,
+                    });
+                }
+            }
         });
     }
     return errors;

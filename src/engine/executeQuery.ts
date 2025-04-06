@@ -1,5 +1,5 @@
 import { DSLQuery, Condition, JoinCondition } from "../types/queryTypes";
-import { Select, SelectMode } from "../types/selectTypes";
+import { Select, SelectAggregateFunction, SelectMode } from "../types/selectTypes";
 import { LogicalOperator, JoinOperator } from "../types/operatorTypes";
 import { getNestedFieldValue } from "./helper";
 
@@ -54,6 +54,8 @@ function evaluateFilterCondition(
         Array.isArray(value) &&
         fieldValue.some((v) => value.includes(v))
       );
+    default:
+      return false;
   }
 }
 
@@ -64,7 +66,7 @@ function evaluateFilter(
   item: Record<string, unknown>,
   filter?: Condition | JoinCondition
 ): boolean {
-  if (!filter) return true;
+  if (!filter) return true; // No filter means include all items
   if ("field" in filter) {
     return evaluateFilterCondition(item, filter);
   }
@@ -82,39 +84,64 @@ function applySelect(
   select: Select[]
 ): Record<string, unknown>[] {
   return [
-    select.reduce((result, { paths, alias, mode }) => {
+    select.reduce((result, { paths, alias, mode, aggregation }) => {
       const values = items.flatMap((item) =>
         paths
           .map((path) => getNestedFieldValue(item, path))
           .filter((val) => val !== undefined)
       );
-      const finalValue = (() => {
+
+      const processedValues = (() => {
         switch (mode) {
-          case SelectMode.FIRST:
-            return values[0];
-          case SelectMode.LAST:
-            return values.at(-1);
-          case SelectMode.ALL:
-            return values;
           case SelectMode.UNIQUE:
             return [...new Set(values)];
+          case SelectMode.ALL:
+            return values;
+          case SelectMode.FIRST:
+            return values.length > 0 ? values[0] : undefined;
+          case SelectMode.LAST:
+            return values.length > 0 ? values.at(-1) : undefined;
           case SelectMode.FILTER_RESULT:
             return items.length > 0;
-          case SelectMode.COUNT:
-            if (!Array.isArray(values)) return undefined;
-            return values.length;
-          case SelectMode.COUNT_UNIQUE:
-            if (!Array.isArray(values)) return undefined;
-            return new Set(
-              values.map((val) =>
-                typeof val === "object" && val !== null
-                  ? JSON.stringify(val)
-                  : val
-              )
-            ).size;
           default:
-            return values[0]; // Fallback to FIRST
+            return values;
         }
+      })();
+
+      const finalValue = (() => {
+        if (Array.isArray(processedValues)) {
+          switch (aggregation) {
+            case SelectAggregateFunction.COUNT:
+              return processedValues.length;
+            case SelectAggregateFunction.COUNT_DISTINCT:
+              return [...new Set(processedValues)].length;
+            case SelectAggregateFunction.SUM:
+              return processedValues.reduce((acc: number, val) => {
+                return acc + (typeof val === "number" ? val : 0);
+              }, 0);
+            case SelectAggregateFunction.AVG:
+              return (
+                processedValues.reduce((acc: number, val) => {
+                  return acc + (typeof val === "number" ? val : 0);
+                }, 0) / processedValues.length
+              );
+            case SelectAggregateFunction.MIN:
+              return Math.min(
+                ...processedValues.map((val) =>
+                  typeof val === "number" ? val : Infinity
+                )
+              );
+            case SelectAggregateFunction.MAX:
+              return Math.max(
+                ...processedValues.map((val) =>
+                  typeof val === "number" ? val : -Infinity
+                )
+              );
+            default:
+              return processedValues;
+          }
+        }
+        return processedValues;
       })();
 
       return { ...result, [alias ?? paths[0]]: finalValue };
@@ -133,7 +160,6 @@ export function executeQuery(
     throw new Error("Data must be an array");
   }
 
-  // Convert data to Record<string, unknown>[] and filter out non-objects
   const validData = data.filter(
     (item): item is Record<string, unknown> =>
       typeof item === "object" && item !== null
@@ -141,17 +167,12 @@ export function executeQuery(
 
   const queryResult = new Map<string, unknown>();
 
-  // Process each select in the query
   dslQuery.query.forEach(({ select, filter }) => {
-    // Filter the data based on the query conditions
     const filteredData = validData.filter((item) =>
       evaluateFilter(item, filter)
     );
 
-    // Apply the select logic to transform the data
     const selectedData = applySelect(filteredData, select);
-
-    // Store in Map using alias as key and selected data as value
     selectedData.forEach((result) => {
       Object.entries(result).forEach(([key, value]) => {
         queryResult.set(key, value);
