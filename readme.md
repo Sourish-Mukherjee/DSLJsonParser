@@ -1,5 +1,7 @@
-[![Tests](https://github.com/Sourish-Mukherjee/DSLJsonParser/actions/workflows/node.js.yml/badge.svg)](https://github.com/johnDoe/DSLJsonParser/actions)
-
+![Tests](https://github.com/Sourish-Mukherjee/DSLJsonParser/actions/workflows/node.js.yml/badge.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178c6?logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white)
+![Last Commit](https://img.shields.io/github/last-commit/Sourish-Mukherjee/DSLJsonParser)
 
 # Query Structure Documentation
 
