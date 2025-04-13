@@ -116,6 +116,35 @@ function validateSelect(obj, path) {
                     });
                 }
             }
+            /*
+             * The calculationOnly property is optional and can be a boolean.
+             * If it is true, paths must not be empty and alias must be defined.
+             * If it is false or undefined, no additional validation is needed.
+             */
+            if (item.calculationOnly !== undefined) {
+                if (typeof item.calculationOnly !== "boolean") {
+                    errors.push({
+                        field: `${path}.select[${index}].calculationOnly`,
+                        message: `'calculationOnly' must be of ${(0, selectTypes_1.getSelectSchema)().calculationOnly} type`,
+                    });
+                }
+                else {
+                    if (item.calculationOnly) {
+                        if (item.paths.length === 0) {
+                            errors.push({
+                                field: `${path}.select[${index}].paths`,
+                                message: `'paths' must not be empty when calculationOnly is true`,
+                            });
+                        }
+                        if (!item.alias) {
+                            errors.push({
+                                field: `${path}.select[${index}].alias`,
+                                message: `'alias' must be defined when calculationOnly is true`,
+                            });
+                        }
+                    }
+                }
+            }
         });
     }
     return errors;

@@ -22,7 +22,7 @@ export type Select = {
   alias?: string;
   mode?: SelectMode
   aggregation?: SelectAggregateFunction;
-
+  calculationOnly?: boolean;
 };
 
 export function getSelectSchema(): Record<keyof Select, string> {
@@ -31,5 +31,6 @@ export function getSelectSchema(): Record<keyof Select, string> {
     alias: "string (optional)",
     mode: `${Object.values(SelectMode).join(" | ")} (optional)`,
     aggregation: `${Object.values(SelectAggregateFunction).join(" | ")} (optional)`,
+    calculationOnly: "boolean (optional)",
   };
 }

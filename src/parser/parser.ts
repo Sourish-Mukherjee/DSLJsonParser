@@ -1,7 +1,11 @@
 import { ValidationError } from "../types/errorTypes";
 import { LogicalOperator, JoinOperator } from "../types/operatorTypes";
 import { DSLQuery } from "../types/queryTypes";
-import { getSelectSchema, SelectAggregateFunction, SelectMode } from "../types/selectTypes";
+import {
+  getSelectSchema,
+  SelectAggregateFunction,
+  SelectMode,
+} from "../types/selectTypes";
 import {
   mapperLogicalOperatorToValueTypes,
   isValidValueType,
@@ -145,13 +149,48 @@ function validateSelect(
 
       if (item.aggregation !== undefined) {
         const validAggregations = Object.values(SelectAggregateFunction);
-        if (!validAggregations.includes(item.aggregation as SelectAggregateFunction)) {
+        if (
+          !validAggregations.includes(
+            item.aggregation as SelectAggregateFunction
+          )
+        ) {
           errors.push({
             field: `${path}.select[${index}].aggregation`,
             message: `'aggregation' must be of ${
               getSelectSchema().aggregation
             } type`,
           });
+        }
+      }
+
+      /*
+       * The calculationOnly property is optional and can be a boolean.
+       * If it is true, paths must not be empty and alias must be defined.
+       * If it is false or undefined, no additional validation is needed.
+       */
+      if (item.calculationOnly !== undefined) {
+        if (typeof item.calculationOnly !== "boolean") {
+          errors.push({
+            field: `${path}.select[${index}].calculationOnly`,
+            message: `'calculationOnly' must be of ${
+              getSelectSchema().calculationOnly
+            } type`,
+          });
+        } else {
+          if (item.calculationOnly) {
+            if (item.paths.length === 0) {
+              errors.push({
+                field: `${path}.select[${index}].paths`,
+                message: `'paths' must not be empty when calculationOnly is true`,
+              });
+            }
+            if (!item.alias) {
+              errors.push({
+                field: `${path}.select[${index}].alias`,
+                message: `'alias' must be defined when calculationOnly is true`,
+              });
+            }
+          }
         }
       }
     });
