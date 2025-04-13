@@ -24,6 +24,7 @@ function getSelectSchema() {
         alias: "string (optional)",
         mode: `${Object.values(SelectMode).join(" | ")} (optional)`,
         aggregation: `${Object.values(SelectAggregateFunction).join(" | ")} (optional)`,
+        calculationOnly: "boolean (optional)",
     };
 }
 exports.getSelectSchema = getSelectSchema;
